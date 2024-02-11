@@ -1,0 +1,554 @@
+{% load replace_space %} {% load format_space_capital %}
+<html>
+
+<head>
+    {% load static %}
+    <meta charset="utf-8" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Covid Vaccine Finder Using Python Django made by Nakul Gupta" />
+
+    <title>Covid Vaccine Finder</title>
+    <style type="text/css">
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        .header {
+            width: 100%;
+            height: 100px;
+            background: white;
+            display: flex;
+            box-shadow: 0px -1px 14px rgb(0 0 0 / 60%);
+        }
+
+        .logo {
+            margin: auto 10px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .logo img {
+            width: 218px;
+            height: 75px;
+        }
+
+        .content {
+            height: calc(100% - 100px);
+            display: grid;
+        }
+
+        .card {
+            width: 100%;
+            padding: 10px;
+            height: 100%;
+            /* box-shadow: 1px 1px 5px rgb(0 0 0 / 60%); */
+            margin: auto;
+            border-radius: 5px;
+            overflow: auto;
+        }
+
+        .dataTables_length {
+            display: none !important;
+        }
+
+        div.dataTables_wrapper {
+            overflow: hidden;
+        }
+
+        div.dataTables_wrapper .row:nth-child(2) {
+            overflow: auto;
+        }
+
+        div.dataTables_wrapper div.dataTables_filter {
+            display: none !important;
+        }
+
+        label.search {
+            display: inline-block;
+            font-weight: normal;
+            white-space: nowrap;
+            text-align: left;
+            width: 100%;
+        }
+
+        label.search input {
+            display: inline-block;
+        }
+
+        .search_div {
+            display: inline-block;
+        }
+
+        .btn1 {
+            display: inline-block;
+            box-sizing: border-box;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-color: transparent;
+            border: 2px solid #e74c3c;
+            border-radius: 0.6em;
+            color: #e74c3c;
+            cursor: pointer;
+            align-self: center;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1;
+            padding: 0.6em 1.8em;
+            text-decoration: none;
+            text-align: center;
+            text-transform: uppercase;
+            font-family: "Montserrat", sans-serif;
+            font-weight: 700;
+            transition: box-shadow 300ms ease-in-out, color 300ms ease-in-out;
+        }
+
+        .btn1:hover,
+        .btn1:focus {
+            outline: 0;
+        }
+
+        .btn1:hover {
+            color: #fff;
+            box-shadow: 0 0 40px 40px #e74c3c inset;
+        }
+
+        .datatable_div {
+            overflow: auto;
+            padding: 10px;
+            max-height: calc(100vh - 120px);
+            height: 100%;
+        }
+
+        .display_flex {
+            display: flex;
+            margin: 0 !important;
+        }
+
+        .card {
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        .search_col {
+            border-right: 1px solid #bdbdbd;
+            padding: 10px;
+            padding-top: 20px;
+        }
+
+        @media (min-width: 576px) {
+            .search_col {
+                border-right: 0px;
+                border-bottom: 1px solid #bdbdbd;
+                height: auto;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .search_col {
+                border-right: 1px solid #bdbdbd;
+                border-bottom: 0;
+                height: 100%;
+            }
+        }
+
+        td {
+            width: 100%;
+        }
+
+        .select_50 {
+            width: 150px;
+        }
+
+        .table_spacer {
+            border-collapse: separate;
+            border-spacing: 0 1em;
+        }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 4px solid #3498db;
+            width: 40px;
+            height: 40px;
+            -webkit-animation: spin 2s linear infinite;
+            /* Safari */
+            animation: spin 2s linear infinite;
+        }
+
+        /* Safari */
+
+        @-webkit-keyframes spin {
+            0% {
+                -webkit-transform: rotate(0deg);
+            }
+
+            100% {
+                -webkit-transform: rotate(360deg);
+            }
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loader_div {
+            position: absolute;
+            z-index: 999999999;
+            top: 0;
+            left: 0;
+            display: grid;
+            background-color: rgba(0, 0, 0, 0.8);
+            width: 100%;
+            height: 100%;
+            color: white;
+        }
+
+        .loader_inner {
+            margin: auto;
+            display: flex;
+        }
+
+        .loader_inner p {
+            margin: 0;
+            align-self: center;
+            margin-left: 10px;
+        }
+
+        .hide {
+            display: none !important;
+        }
+    </style>
+    <link rel="stylesheet" type="text/css" href="{% static 'DataTables/datatables.min.css' %}" />
+</head>
+
+<body>
+    <div class="loader_div">
+        <div class="loader_inner">
+            <div class="loader"></div>
+            <p>Please Wait...</p>
+        </div>
+    </div>
+    <div>
+        <div class="header">
+            <div class="logo"><img src="{% static 'img/logo.jpeg' %}" /></div>
+        </div>
+        <div class="content">
+            <div class="card">
+                <div class="col-xl-12 display_flex row">
+                    <div class="col-xl-3 col-lg-4 col-md-4 col-sm-12 col-12 search_col">
+                        <h4><u>Filters</u></h4>
+                        <table class="table_spacer">
+                            <tr>
+                                <td>
+                                    <b>Postcode</b>
+                                </td>
+                                <td style="text-align: right">
+                                    <input type="search" class="form-control form-control-sm search_box"
+                                        name="search_box" placeholder="Search Postcode...">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <b>Radius</b>
+                                </td>
+                                <td style="text-align: right">
+                                    <select class="select_50 select_radius" name="select_radius">
+                                        <option value="200">200 Meters</option>
+                                        <option value="400">400 Meters</option>
+                                        <option value="1000">1000 Meters</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <b>Vaccine Type</b>
+                                </td>
+                                <td style="text-align:right">
+                                    <select class="select_50 select_vaccine_type" name="select_vaccine_type">
+                                        <option value="all">All</option>
+                                        <option value="moderna_vaccine">Moderna Vaccine</option>
+                                        <option value="oxpord_astrazeneca_vaccine">Oxpord Astrazeneca Vaccine</option>
+                                        <option value="pfizer_biontech_vaccine">Pfizer Biontech Vaccine</option>
+                                        <option value="janssen_vaccine">Janssen Vaccine</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <b>Region</b>
+                                </td>
+                                <td style="text-align:right">
+                                    <select class="select_50 select_region" name="select_region">
+                                        <option value="all">All</option>
+                                        {% for r in region %}
+                                        {% if r.0 %}
+                                        <option value="{{r.0|replace_space}}">{{r.0}}</option>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <b>Site Type</b>
+                                </td>
+                                <td style="text-align:right">
+                                    <select class="select_50 select_site_type" name="select_site_type">
+                                        <option value="all">All</option>
+                                        {% for t in type %}
+                                        {% if t.0 %}
+                                        <option value="{{t.0}}">{{t.0|format_space_capital}}</option>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                            </tr>
+                        </table>
+                        <div style="text-align:center; width:100%;">
+                            <button class="btn1 class filter_btn">Submit</button>
+                        </div>
+                    </div>
+                    <div class="col-xl-9 col-lg-8 col-md-8 col-sm-12 col-12 datatable_div">
+                        <table class="datatable table">
+                            <thead>
+                                <th>Center Id</th>
+                                <th>Name</th>
+                                <th>Address 1</th>
+                                <th>Address 2</th>
+                                <th>City</th>
+                                <th>Postcode</th>
+                                <th>Region</th>
+                                <th>Type</th>
+                                <th>Vaccines</th>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" src="{% static 'DataTables/datatables.min.js' %}"></script>
+    <script>
+        (function () {
+
+            function htmlDecode(input) {
+                var doc = new DOMParser().parseFromString(input, "text/html");
+                return doc.documentElement.textContent;
+            }
+            var a = '{{data}}';
+            a = htmlDecode(a);
+            a = a.replace(/\n+/g, "");
+            a = JSON.parse(a);
+            var html = [];
+            var center_data = {};
+            var original_datatable_data = null;
+            for (var i = 0; i < a.length; i++) {
+                var element = a[i];
+                var html1 = [];
+                center_data[element["center_id"]] = {};
+                center_data[element["center_id"]]["postcode"] = element["postcode"].replace(/ /gi, '');
+                center_data[element["center_id"]]["region"] = element["region"];
+                center_data[element["center_id"]]["type"] = element["type"];
+                center_data[element["center_id"]]["vaccine"] = {};
+                center_data[element["center_id"]]["vaccine"]["moderna_vaccine"] = element["moderna_vaccine"];
+                center_data[element["center_id"]]["vaccine"]["oxpord_astrazeneca_vaccine"] = element["oxpord_astrazeneca_vaccine"];
+                center_data[element["center_id"]]["vaccine"]["pfizer_biontech_vaccine"] = element["pfizer_biontech_vaccine"];
+                center_data[element["center_id"]]["vaccine"]["janssen_vaccine"] = element["janssen_vaccine"];
+
+                var data_string = "cv_center_id='" + element["center_id"] + "'";
+                html1.push("<td>" + element["center_id"] + "</td>");
+                html1.push("<td>" + element["name"] + "</td>");
+                html1.push("<td>" + element["address_1"] + "</td>");
+                html1.push("<td>" + element["address_2"] + "</td>");
+                html1.push("<td>" + element["city"] + "</td>");
+                html1.push("<td>" + element["postcode"].replace(/ /gi, '') + "</td>");
+                html1.push("<td>" + element["region"] + "</td>");
+                // console.log(element["type"].replace("_", " "));
+                html1.push("<td>" + (element["type"].replace("_", " ")).toUpperCase() + "</td>");
+                html1.push("<td><b>Moderna Vaccine:</b> " + element["moderna_vaccine"] +
+                    "</br><b>Oxford/AstraZeneca Vaccine:</b> " + element["oxpord_astrazeneca_vaccine"] +
+                    "</br><b>Pfiser/BioNTech Vaccine:</b> " + element["pfizer_biontech_vaccine"] +
+                    "</br><b>Janssen Vaccine:</b> " + element["janssen_vaccine"] + "</br></td>");
+
+                html.push("<tr " + data_string + ">" + html1.join("") + "</tr>");
+            }
+            $(".datatable_div").find(".datatable").find("tbody").html(html.join(""));
+            display_loader();
+            var datatable = $(".datatable").DataTable({
+                searching: true,
+                paging: true,
+                info: false,
+                ordering: false,
+                language: {
+                    "search": '<b>Search: </b>',
+                    "searchPlaceholder": "Enter Postcode",
+                },
+                "columns": [{
+                    "searchable": false
+                }, {
+                    "searchable": false
+                }, {
+                    "searchable": false
+                }, {
+                    "searchable": false
+                }, {
+                    "searchable": false
+                }, {
+                    "searchable": true
+                }, {
+                    "searchable": false
+                }, {
+                    "searchable": false
+                }, {
+                    "searchable": false
+                }]
+            });
+            hide_loader();
+            original_datatable_data = datatable.rows().data();
+
+            $(document).on("click", ".filter_btn", function (e) {
+                e.preventDefault();
+                var search_data = $("[name='search_box']").val();
+                var select_radius = $("[name='select_radius']").val();
+                var select_vaccine_type = $("[name='select_vaccine_type']").val();
+                var select_region = $("[name='select_region']").val();
+                var select_site_type = $("[name='select_site_type']").val();
+
+                search_data = search_data.replace(/ /gi, '');
+                display_loader();
+                if (!search_data || search_data.length <= 0) {
+                    sortTable(original_datatable_data, null, select_vaccine_type, select_region, select_site_type);
+                    return;
+                }
+                var url = "https://api.postcodes.io/postcodes/" + search_data + "/nearest?limit=10000&radius=" + select_radius;
+                $.ajax({
+                    url: url,
+                    method: "GET",
+                    contentType: "application/json",
+                    cache: false,
+                    success: function (result) {
+                        if (result.status && result.status == 200) {
+                            var postcodes = [];
+                            var ajaxes = [];
+                            for (var i = 0; i < result.result.length; i++) {
+                                var postcode1 = result.result[i].postcode;
+                                postcode1 = postcode1.replace(/ /gi, '');
+                                postcodes.push(postcode1);
+                                ajaxes.push(getNearestPincode(postcode1, select_radius));
+                            }
+                            postcodes = postcodes.map(function (item) {
+                                return typeof item === "string" ? item.toString().toUpperCase() : item
+                            });
+                            postcodes = [...new Set(postcodes)];
+                            Promise.all(ajaxes).then((result) => {
+                                var postcodes1 = [];
+                                for (var i = 0; i < result.length; i++) {
+                                    if (result[i].status && result[i].status == 200) {
+                                        var result1 = result[i].result;
+                                        for (var j = 0; j < result1.length; j++) {
+                                            var postcode1 = result1[j].postcode;
+                                            postcode1 = postcode1.replace(/ /gi, '');
+                                            postcodes1.push(postcode1);
+                                        }
+                                    }
+                                    postcodes1 = postcodes1.map(function (item) {
+                                        return typeof item === "string" ? item.toString().toUpperCase() : item
+                                    });
+                                    postcodes1 = [...new Set(postcodes1)];
+                                }
+                                sortTable(original_datatable_data, postcodes1, select_vaccine_type, select_region, select_site_type);
+                            }).catch((e) => {
+                                console.log(e);
+                                hide_loader();
+                            })
+                        } else {
+                            alert("Error fetching nearby postcodes.");
+                            hide_loader();
+                        }
+                    },
+                    failure: function (e) {
+                        hide_loader();
+                        alert("Error fetching nearby postcodes.");
+                    }
+                });
+            });
+
+            function getNearestPincode(postcode, radius) {
+                var url = "https://api.postcodes.io/postcodes/" + postcode + "/nearest?limit=10000&radius=" + radius;
+                return $.ajax({
+                    url: url,
+                    method: "GET",
+                    contentType: "application/json",
+                    cache: false
+                });
+            }
+
+            function sortTable(original_datatable_data, postcodes1, select_vaccine_type, select_region, select_site_type) {
+                var datatable_data = [];
+                if (postcodes1 && postcodes1.length > 0) {
+                    for (var i = 0; i < original_datatable_data.length; i++) {
+                        if (original_datatable_data[i][5] && postcodes1.includes(original_datatable_data[i][5].toUpperCase())) {
+                            var local_center_data = center_data[original_datatable_data[i][0]];
+                            var flag = true;
+                            if (select_vaccine_type && select_vaccine_type.toLowerCase() != "all") {
+                                if (local_center_data["vaccine"][select_vaccine_type] > 0) {
+                                    flag = true;
+                                } else {
+                                    flag = false;
+                                }
+                            }
+                            if (flag && select_region && select_region.toLowerCase() != "all") {
+                                if (local_center_data["region"] && local_center_data["region"].toUpperCase() == select_region.toUpperCase()) {
+                                    flag = true;
+                                } else {
+                                    flag = false;
+                                }
+                            }
+                            if (flag && select_site_type && select_site_type.toLowerCase() != "all") {
+                                if (local_center_data["type"] && local_center_data["type"].toUpperCase() == select_site_type.toUpperCase()) {
+                                    flag = true;
+                                } else {
+                                    flag = false;
+                                }
+                            }
+                            if (flag) {
+                                datatable_data.push(original_datatable_data[i]);
+                            }
+                        }
+                    }
+                } else {
+                    datatable_data = original_datatable_data;
+                }
+                updateDatatable(datatable_data);
+            }
+
+            function updateDatatable(datatable_data) {
+                datatable.clear();
+                datatable.rows.add(datatable_data);
+                datatable.draw();
+                hide_loader();
+            }
+
+            function display_loader() {
+                $(".loader_div").removeClass("hide");
+            }
+
+            function hide_loader() {
+                $(".loader_div").addClass("hide");
+            }
+        })();
+    </script>
+</body>
+
+</html>
